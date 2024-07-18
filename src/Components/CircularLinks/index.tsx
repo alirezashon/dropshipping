@@ -81,23 +81,6 @@ const CircularLinks: React.FC<Props> = ({ data }) => {
             <h6>{item.name}</h6>
           </Link>
         ))}
-        {/* Render items again to create seamless loop */}
-        {data?.map((item, index) => (
-          <Link
-            key={index + data.length}
-            href={`/Store/#${item.name}`}
-            className={styles.name}
-          >
-            <Image
-              src={`${item.src}`}
-              alt={item.name}
-              className={styles.image}
-              width={99}
-              height={99}
-            />
-            <h6>{item.name}</h6>
-          </Link>
-        ))}
       </div>
     </div>
   )
