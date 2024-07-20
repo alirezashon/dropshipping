@@ -51,7 +51,7 @@ const products: ProductInterface[] = [
     title: 'Product 7',
     description: 'This is a description for product 4.',
     price: 39.99,
-    src: 'https://picsum.photos/200/300?random=7',
+    src: 'https://ae01.alicdn.com/kf/S2e1262fae3034520b194e047a6da9eb4J.jpg',
   },
 ]
 

@@ -8,6 +8,7 @@ export interface ProductInterface {
   // rates:number
   // comments: CommentInterface[]
   description: string
+  // link:string
   // keywords: string[]
 }
 export interface CommentInterface {

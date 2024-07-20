@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['picsum.photos'],
+    domains: ['picsum.photos', 'ae01.alicdn.com'],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
