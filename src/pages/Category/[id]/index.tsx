@@ -3,7 +3,7 @@
 import Product from '@/Components/Products'
 import { ProductInterface } from '@/Interfaces'
 import { GetServerSideProps, NextPage } from 'next'
-import styles from './index.module.css'
+import styles from '../index.module.css'
 
 interface PostProps {
   posts: ProductInterface[]

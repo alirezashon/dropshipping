@@ -2,14 +2,10 @@ export interface ProductInterface {
   _id: string
   title: string
   src: string | Buffer
-  // subImages: string[]
   price: number
-  // categories: string
-  // rates:number
-  // comments: CommentInterface[]
-  description: string
-  // link:string
-  // keywords: string[]
+  categories: string
+  link:string
+  keywords: string[]
 }
 export interface CommentInterface {
   client: string
