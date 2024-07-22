@@ -1,57 +1,76 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react'
 
-const LocationFetcher = () => {
-  const [data, setData] = useState<{ ip: string; location: Record<string, string> } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const data = [
+  {
+    title: 'Jumpsuit Women Summer Plunge',
+    src: 'https://ae01.alicdn.com/kf/S56dad3e493834920ba13fe8092f6145bY.jpg',
+    price: 11.99,
+    categories: 'Clothes',
+    link: 'https://s.click.aliexpress.com/e/_oCpSvLq',
+    keywords: ['women clothes'],
+  },
+]
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/chat', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
+const UploadImages = () => {
+  const [progress, setProgress] = useState(0)
+  const [loading, setLoading] = useState(false)
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Network response was not ok: ${errorText}`);
-        }
-
-        const result = await response.json();
-        setData(result);
-        console.log(result); // Log the API response
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Unknown error');
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
+  const uploadImage = async (item:any, index:number) => {
+    try {
+      const response = await fetch(item.src)
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`)
       }
-    };
 
-    fetchData();
-  }, []);
+      const imageBuffer = await response.arrayBuffer()
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+      await fetch('/api/addGridFS', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: [
+            {
+              title: item.title,
+              src: `data:image/jpeg;base64,${Buffer.from(imageBuffer).toString(
+                'base64'
+              )}`,
+              price: item.price,
+              categories: item.categories,
+              link: item.link,
+              keywords: item.keywords,
+            },
+          ],
+        }),
+      })
+
+      setProgress(((index + 1) / data.length) * 100)
+    } catch (error) {
+      console.error(`Failed to upload image ${item.title}: ${error}`)
+    }
+  }
+
+  const handleUpload = async () => {
+    setLoading(true)
+    for (let i = 0; i < data.length; i++) {
+      await uploadImage(data[i], i)
+    }
+    setLoading(false)
+  }
 
   return (
     <div>
-      <h2>Client Location and IP</h2>
-      {data ? (
+      {loading ? (
         <div>
-          <p><strong>IP Address:</strong> {data.ip}</p>
-          <p><strong>Country:</strong> {data.location.country}</p>
-          <p><strong>Region:</strong> {data.location.region}</p>
-          <p><strong>City:</strong> {data.location.city}</p>
-          <p><strong>Latitude:</strong> {data.location.latitude}</p>
-          <p><strong>Longitude:</strong> {data.location.longitude}</p>
+          <p>Uploading... {progress}%</p>
+          <progress value={progress} max='100' />
         </div>
       ) : (
-        <p>No data available</p>
+        <button onClick={handleUpload}>Start Upload</button>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default LocationFetcher;
+export default UploadImages

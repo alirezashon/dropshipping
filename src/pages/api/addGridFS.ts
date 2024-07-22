@@ -1,60 +1,73 @@
-import mongoose from 'mongoose'
-import db from '@/utils'
-import { NextApiRequest, NextApiResponse } from 'next'
-import fs from 'fs'
-import path from 'path'
+import mongoose from 'mongoose';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { Readable } from 'stream';
+import Product from '@/models/Data/Product';
+import db from '@/utils';
 
- const productSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  src: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Image' },
-})
-
-const Product =
-  mongoose.models.Product || mongoose.model('Product', productSchema)
-
-const Shop = async (req: NextApiRequest, res: NextApiResponse) => {
+const uploadImage = async (url: string, bucket: mongoose.mongo.GridFSBucket): Promise<mongoose.Types.ObjectId> => {
   try {
-    await db.connect2DB()
-
-    const imageDir = path.resolve('D:\\personal\\ax\\producto\\ziada')
-    const images = fs.readdirSync(imageDir)
-
-    const conn = mongoose.connection
-    const bucket = new mongoose.mongo.GridFSBucket(conn.db, {
-      bucketName: 'images',
-    })
-
-    const uploadImage = (image: string): Promise<mongoose.Types.ObjectId> => {
-      return new Promise((resolve, reject) => {
-        const filePath = path.join(imageDir, image)
-        const readStream = fs.createReadStream(filePath)
-        const uploadStream = bucket.openUploadStream(image)
-        readStream
-          .pipe(uploadStream)
-          .on('error', (error) => reject(error))
-          .on('finish', () =>
-            resolve(uploadStream.id as mongoose.Types.ObjectId)
-          )
-      })
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
     }
 
-    const data = await Promise.all(
-      images.map(async (image) => {
-        const fileId = await uploadImage(image)
-        await Product.create({
-          title: 'کیک',
-          src: fileId,
-        })
+    const imageBuffer = await response.arrayBuffer();
+    const readableStream = Readable.from(Buffer.from(imageBuffer));
+    const fileName = url.split('/').pop() || 'image';
+
+    const uploadStream = bucket.openUploadStream(fileName);
+
+    return new Promise((resolve, reject) => {
+      readableStream
+        .pipe(uploadStream)
+        .on('error', (error) => reject(error))
+        .on('finish', () => resolve(uploadStream.id as mongoose.Types.ObjectId));
+    });
+  } catch (error) {
+    throw new Error(`Upload image failed: ${error}`);
+  }
+};
+
+const Shop = async (req: NextApiRequest, res: NextApiResponse) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, message: 'Method not allowed' });
+  }
+
+  try {
+    await db.connect2DB();
+
+    const { items } = req.body; // Expecting 'items' to be an array of data objects
+    const conn = mongoose.connection;
+    const bucket = new mongoose.mongo.GridFSBucket(conn.db, { bucketName: 'images' });
+
+    const results = await Promise.all(
+      items.map(async (item: any) => {
+        try {
+          const fileId = await uploadImage(item.src, bucket);
+          const product = await Product.create({
+            title: item.title,
+            src: fileId,
+            price: item.price,
+            categories: item.categories,
+            link: item.link,
+            keywords: item.keywords,
+          });
+          return product;
+        } catch (error) {
+          console.error(`Failed to process item ${item.title}: ${error}`);
+          throw error;
+        }
       })
-    )
+    );
 
     res.status(200).json({
       success: true,
       message: 'Products inserted successfully',
-    })
-  } catch (err) {
-    res.status(500).json({ success: false, message: `Server Error => ${err}` })
+      results,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: `Server Error => ${error}` });
   }
-}
+};
 
-export default Shop
+export default Shop;
