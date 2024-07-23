@@ -2,7 +2,9 @@ export interface ProductInterface {
   _id: string
   title: string
   src: string | Buffer
-  price: number
+  firstPrice: string
+  price: string
+  discount:string
   categories: string
   link:string
   keywords: string[]

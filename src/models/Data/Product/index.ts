@@ -1,11 +1,11 @@
-/** @format */
-
 import mongoose from 'mongoose'
 
 const productSchema = new mongoose.Schema({
   title: { type: String, required: true },
   src: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Image' },
-  price: { type: Number, required: true },
+  firstPrice: { type: String, required: true },
+  price: { type: String, required: true },
+  discount: { type: String, required: true },
   categories: String,
   link: { type: String, required: true },
   keywords: [{ type: String }],
