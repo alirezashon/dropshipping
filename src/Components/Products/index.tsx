@@ -1,5 +1,4 @@
-// src/components/Product.tsx
-import React from 'react'
+ import React from 'react'
 import Image from 'next/image'
 import styles from './index.module.css'
 import { ProductInterface } from '@/Interfaces'
@@ -11,28 +10,20 @@ interface Props {
 const Product: React.FC<Props> = ({ product }) => {
   return (
     <div className={styles.product}>
-      {/* <Image
-        src={`${product.src}`}
-        alt={product.title}
-        width={1200}
-        height={1300}
-        className={styles.image}
-      /> */}
-     {/* <img
-        src={`${product.src}`}
-        alt={product.title}
-        className={styles.image}
-      /> */}
+      <div className={styles.imageContainer}>
         <Image
-        src="https://ae01.alicdn.com/kf/S816f55308e774fc2a44e7f6ef586e4d2S.jpg"
-        alt="Test Image"
-        width={500}
-        height={500}
-      />
-          
+          className={styles.image}
+          src={product.src.toString()}
+          alt="Test Image"
+          width={500}
+          height={500}
+        />
+        <div className={styles.banner}>{product.discount}</div>
+      </div>
       <h2 className={styles.name}>{product.title}</h2>
-      <p className={styles.description}>{product.description}</p>
-      <p className={styles.price}>${product.price.toFixed(2)}</p>
+      <p className={styles.firstPrice}>${product.firstPrice}</p>
+      <p className={styles.price}>${product.price}</p>
+      <p className={styles.discount}></p>
     </div>
   )
 }
